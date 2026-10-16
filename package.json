@@ -1,0 +1,1 @@
+{"name":"pigeon-dropping-game","version":"1.0.0","private":true,"description":"Pigeon Patrol arcade game","type":"module","scripts":{"start":"node server.mjs"},"engines":{"node":">=22"}}
