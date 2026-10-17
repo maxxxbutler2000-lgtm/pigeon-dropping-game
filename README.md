@@ -8,10 +8,16 @@ Node.js 22+ and PostgreSQL are required. Install dependencies with `pnpm install
 
 ## Railway
 
-Deploy the Dockerfile. Add PostgreSQL and set the game service variable `DATABASE_URL` to `${{Postgres.DATABASE_URL}}`. Tables are created automatically at startup. Production sessions use Secure, HttpOnly, SameSite cookies; passwords are salted and hashed with scrypt. No credentials belong in this repository.
+Deploy the Dockerfile. Add PostgreSQL and set the game service variable `DATABASE_URL` to `${{Postgres.DATABASE_URL}}`. Tables are created in the isolated `pigeon_patrol` schema at startup. To move existing Pigeon accounts from a prior database, set `MIGRATION_DATABASE_URL` to its connection string before the first launch. The migration copies accounts, password hashes, saves and unexpired sessions once, refuses to overwrite a populated destination, and leaves source data intact. Remove that migration variable after verifying the transfer. Production sessions use Secure, HttpOnly, SameSite cookies; passwords are salted and hashed with scrypt. No credentials belong in this repository.
 
 ## Accounts and saves
 
 Guests save locally. Signing in loads that account's cloud save, independently of the guest game. New accounts begin fresh. Sign out to restore the device's guest game. Progress syncs every 15 seconds; simultaneous save conflicts ask the player to reload instead of overwriting another tab. New Game resets the current run but the account's all-time leaderboard best remains. Usernames are public; passwords are private. Password recovery is not implemented.
 
 The leaderboard is casual: client-reported scores are validated for structure and limits but are not cheat-proof. Browser saves on the original ChatGPT Site do not automatically transfer to this domain.
+
+## Sharing Lemonade Clicker's private database
+
+Run the game service in the Lemonade Clicker project and set DATABASE_URL to the existing Postgres-2VSP service reference. All Pigeon tables live under pigeon_patrol; lemonade tables remain separate. No public database port is required.
+
+For a one-time HTTPS transfer between the old and new game services, temporarily configure the same strong MIGRATION_TOKEN on both services and set MIGRATION_SOURCE_URL on the destination to the old HTTPS game URL. The authenticated transfer pauses source account writes while records are copied. After verifying migration, remove migration variables. UPSTREAM_URL on the original service can preserve its public URL by forwarding to the new HTTPS service, including login cookies. It does not need a database connection in forwarding mode. Keep the old database as a rollback backup until it is no longer needed.
